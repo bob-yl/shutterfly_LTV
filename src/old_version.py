@@ -1,4 +1,4 @@
-import ast
+import json
 from datetime import datetime
 
 
@@ -38,7 +38,7 @@ def ingest(e, data):
     if e["file_path"]:
         file_path = e["file_path"]
         with open(file_path) as f:
-            data = ast.literal_eval(f.read())
+            data = json.load(f)
 
     return data
 
