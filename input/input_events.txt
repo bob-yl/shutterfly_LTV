@@ -15,4 +15,6 @@
 {"type": "ORDER", "verb": "NEW", "key": "68d84e5j1a45", "event_time": "2017-02-15T12:55:55.555Z", "customer_id": "96f55c7d8f41", "total_amount": "17.34 USD"},
 {"type": "SITE_VISIT", "verb": "NEW", "key": "ac03e415502s", "event_time": "2017-02-06T13:45:52.041Z", "customer_id": "96f55c7d8f41", "tags": [{"some key": "some value"}]},
 {"type": "IMAGE", "verb": "UPLOAD", "key": "d8ehe47b1d9b", "event_time": "2017-02-06T13:47:12.344Z", "customer_id": "96f55c7d8f41", "camera_make": "Canon", "camera_model": "EOS 80D"},
-{"type": "ORDER", "verb": "NEW", "key": "68d84e81a45", "event_time": "2017-02-06T13:55:55.555Z", "customer_id": "96f55c7d8f41", "total_amount": "5.48 USD"}]
+{"type": "ORDER", "verb": "NEW", "key": "68d84e81a45", "event_time": "2017-02-06T13:55:55.555Z", "customer_id": "96f55c7d8f41", "total_amount": "5.48 USD"},
+{"type": "SITE_VISIT", "verb": "NEW", "key": "ac05e815502s", "event_time": "2017-02-20T12:45:52.041Z", "customer_id": "96f55c7d8f41", "tags": [{"some key": "some value"}]},
+{"type": "ORDER", "verb": "UPDATE", "key": "68d84e5j1a45", "event_time": "2017-02-20T12:55:55.555Z", "customer_id": "96f55c7d8f41", "total_amount": "21.16 USD"}]
