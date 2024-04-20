@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta
-
+from operator import itemgetter
 
 def get_date_ranges(data):
     dates_list = [datetime.strptime(i["event_time"], "%Y-%m-%dT%H:%M:%S.%f%z") for i in data]
@@ -12,38 +12,22 @@ def get_date_ranges(data):
 
 
 def TopXSimpleLTVCustomers(x, data):
-    # print(data[])
-    min_date = None,
-    max_date = None
-    ltv = {}
-    # for k,v in data.items():
-    #     print(k)
-    #     print(v)
-    #
-    #     ltv[k] = {}
+    ltv = []
+    # Customer lifetime in weeks
+    customer_lifetime = 52*10
 
-    # dates_list = [datetime.strptime(i["event_time"], "%Y-%m-%dT%H:%M:%S.%f%z") for i in D]
-    # week_range = abs(max(dates_list) - min(dates_list)).days // 7
-    #
-    # agg_dict = {}
-    # for i in D:
-    #     if "customer_id" in i:
-    #         customer_id = i["customer_id"]
-    #         week_id = datetime.strptime(i["event_time"], "%Y-%m-%dT%H:%M:%S.%f%z").isocalendar().week
-    #         visit = 1 if i["type"] == "SITE_VISIT" else 0
-    #         conversion = 1 if i["type"] == "ORDER" else 0
-    #         revenues = float(i["total_amount"].strip("USD")) if i["type"] == "ORDER" else 0.0
-    #         if customer_id not in agg_dict:
-    #             agg_dict[customer_id] = {}
-    #             agg_dict[customer_id][week_id] = {"visits": visit, "conversions": conversion, "revenue": revenues}
-    #         else:
-    #             if week_id not in agg_dict[customer_id]:
-    #                 agg_dict[customer_id][week_id] = {"visits": visit, "conversions": conversion, "revenue": revenues}
-    #             else:
-    #                 agg_dict[customer_id][week_id]["visits"] += visit
-    #                 agg_dict[customer_id][week_id]["conversions"] += conversion
-    #                 agg_dict[customer_id][week_id]["revenue"] += revenues
-    # print(agg_dict)
+    for k,v in data["customers"].items():
+        customer_id = k
+        # ltv = average revenues per week * average visits per week * customer lifetime
+        ltv_value = v["stats"]["weekly_rev_per_visits_revenue"]*v["stats"]["weekly_average_visits"]*customer_lifetime
+        result_data = {"customer_id": customer_id, "value": ltv_value}
+        ltv.append(result_data)
+
+    top_x = sorted(ltv, key=itemgetter('value'), reverse=True)[:x]
+    result_path = "../output/results.txt"
+    save_file(result_path, str(top_x))
+
+
 
 
 def ingest(e, data):
@@ -90,7 +74,6 @@ def ingest(e, data):
         if event["type"] == "ORDER":
             order_id = event["key"]
             revenues = float(event["total_amount"].strip("USD"))
-            revenues_diff = None
             if event["verb"] == "NEW":
                 event_data = {"order_date": event["event_time"], "update_date": None, "amount": revenues}
                 data["customers"][customer_id]["orders"][order_id] = event_data
@@ -98,7 +81,7 @@ def ingest(e, data):
                 # TODO: there is a way to combine both UPDATE and NEW order Counter calculation to a single if, but,
                 #  it would be less readable
 
-                # building a per week event counter to calculate averages - new order
+                # Building a per week event counter to calculate averages - new order
                 if week_id not in event_count[customer_id]:
                     counter_init = {"visits": 0, "revenues": revenues}
                     event_count[customer_id][week_id] = counter_init
@@ -107,10 +90,11 @@ def ingest(e, data):
                                                                         "revenues"] + revenues
 
             else:
+                revenues_diff = None
                 event_data = {"update_date": event["event_time"], "amount": revenues}
                 data["customers"][customer_id]["orders"][order_id].update(event_data)
 
-                # building a per week event counter to calculate averages - order update
+                # Building a per week event counter to calculate averages - order update
                 revenues_diff = revenues - data["customers"][customer_id]["orders"][order_id]["amount"]
                 if revenues_diff != 0:
                     if week_id not in event_count[customer_id]:
@@ -120,14 +104,15 @@ def ingest(e, data):
                         event_count[customer_id][week_id]["revenues"] = event_count[customer_id][week_id][
                                                                         "revenues"] + revenues_diff
 
-        # registering image uploads
+        # Registering image uploads
         if event["type"] == "IMAGE":
             image_id = event["key"]
             camera_data = {"camera_make": event["camera_make"], "camera_model": event["camera_model"]}
             event_data = {"upload_date": event_date, "camera_data": camera_data}
             data["customers"][customer_id]["images"][image_id] = event_data
 
-    # calculating averages per week
+    # Calculating averages per week
+    # Calculation revenues/week per week for better granularity
     stats = {}
     for ck,cv in event_count.items():
         stats[ck] = {}
@@ -163,7 +148,7 @@ def save_file(file_path, data):
 def main():
     data = ingest({"file_path": "../input/input_events.txt"}, None)
     # print(data)
-    TopXSimpleLTVCustomers(1, data)
+    TopXSimpleLTVCustomers(2, data)
 
 
 if __name__ == "__main__":
