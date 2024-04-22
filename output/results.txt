@@ -1,1 +1,1 @@
-[{'customer_id': '96f55c7d8f41', 'value': 1534.9551020408162}, {'customer_id': '96f55c7d8f42', 'value': 1480.726530612245}]
+[{'customer_id': '96f55c7d8f42', 'value': 1480.726530612245}]
